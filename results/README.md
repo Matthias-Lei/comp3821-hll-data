@@ -32,15 +32,17 @@ tar -xzf raw/all-results.tar.gz
 
 ## Headline numbers
 
-Share of rows where the measured RMSE matched the theory (n ≥ 100, where the theory applies):
+Share of rows where the predicted RMSE lies inside the measured 95% interval (n ≥ 100, where the
+theory is judged). Every observations stream with the same n holds the same values, so its copies
+for the other distributions of repeats repeat one result; the second column counts each such n once.
 
-| Sketch | Confirmed |
-|---|---|
-| Bloom filter | 96% |
-| K-Minimum Values | 97% |
-| Linear Counting | 88% |
-| HyperLogLog | 84% |
-| HyperLogLog++ (dense mode only) | 75% |
+| Sketch | Every row | Each observations n once |
+|---|---|---|
+| Bloom filter | 96% | 93% |
+| K-Minimum Values | 97% | 94% |
+| Linear Counting | 88% | 91% |
+| HyperLogLog | 84% | 88% |
+| HyperLogLog++ (dense mode only) | 75% | 79% |
 
 Merging two half-sketches gave the same estimate as one sketch built over the whole stream:
 
