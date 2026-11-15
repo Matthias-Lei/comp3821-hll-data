@@ -1,0 +1,117 @@
+--- a/cpp/include/hyperloglog_plus_plus.hpp
++++ b/cpp/include/hyperloglog_plus_plus.hpp
+@@ -3,6 +3,7 @@
+ #include "sketch.hpp"
+ #include <cstdint>
+ #include <optional>
++#include <unordered_map>
+ #include <vector>
+ 
+ class HyperLogLogPlusPlus : public Sketch {
+@@ -33,6 +34,7 @@
+ private:
+         void update_sparse(std::uint32_t entry);
+         void compact_sparse_buffer();
++        bool dominated_by_compressed(std::uint32_t entry);
+         void flush_sparse();
+         template <class Function>
+         void for_each_sparse(Function&& function) const;
+@@ -44,6 +46,9 @@
+         std::size_t register_count_;
+         BiasTableSource bias_table_source_;
+         std::vector<std::uint8_t> compressed_sparse_;
++        // Best entry per prefix in compressed_sparse_, built on first use after each change.
++        std::unordered_map<std::uint32_t, std::uint32_t> compressed_best_;
++        bool compressed_best_ready_ = false;
+         std::vector<std::uint32_t> sparse_buffer_;
+         std::size_t sparse_buffer_count_ = 0;
+         std::vector<std::uint8_t> dense_registers_;
+--- a/cpp/src/hyperloglog_plus_plus.cpp
++++ b/cpp/src/hyperloglog_plus_plus.cpp
+@@ -157,6 +157,11 @@
+         if (sparse_buffer_[slot] == entry) {
+                 return;
+         }
++        // An entry the compressed list already holds at an equal or better rank would be dropped by
++        // the next compaction anyway, so drop it now and keep the buffer for new entries.
++        if (!compressed_sparse_.empty() && dominated_by_compressed(entry)) {
++                return;
++        }
+         if (sparse_buffer_count_ + 1 > sparse_buffer_.size() * 3 / 4
+             && sparse_buffer_.size() < max_slots) {
+                 std::vector<std::uint32_t> expanded(
+@@ -180,6 +185,33 @@
+         }
+ }
+ 
++bool HyperLogLogPlusPlus::dominated_by_compressed(std::uint32_t entry)
++{
++        if (!compressed_best_ready_) {
++                compressed_best_.clear();
++                std::size_t offset = 0;
++                std::uint32_t previous_entry = 0;
++                while (offset < compressed_sparse_.size()) {
++                        previous_entry += decode_varint(compressed_sparse_, offset);
++                        const std::uint32_t prefix = (previous_entry & 1)
++                            ? previous_entry >> kSparseRankShift : previous_entry >> 1;
++                        auto [it, inserted] = compressed_best_.emplace(prefix, previous_entry);
++                        if (!inserted && (previous_entry & 1)
++                            && ((previous_entry >> 1) & kRankMask) > ((it->second >> 1) & kRankMask)) {
++                                it->second = previous_entry;
++                        }
++                }
++                compressed_best_ready_ = true;
++        }
++        const std::uint32_t prefix = (entry & 1) ? entry >> kSparseRankShift : entry >> 1;
++        const auto found = compressed_best_.find(prefix);
++        if (found == compressed_best_.end()) {
++                return false;
++        }
++        return !((entry & 1) && (found->second & 1)
++            && ((entry >> 1) & kRankMask) > ((found->second >> 1) & kRankMask));
++}
++
+ void HyperLogLogPlusPlus::compact_sparse_buffer()
+ {
+         if (sparse_buffer_.empty() || sparse_buffer_count_ == 0) {
+@@ -197,13 +229,17 @@
+                         it->second = entry;
+                 }
+         };
+-        std::unordered_map<std::uint32_t, std::uint32_t> compressed;
+-        std::size_t offset = 0;
+-        std::uint32_t previous_entry = 0;
+-        while (offset < compressed_sparse_.size()) {
+-                previous_entry += decode_varint(compressed_sparse_, offset);
+-                keep_best(compressed, previous_entry);
++        if (!compressed_best_ready_) {
++                compressed_best_.clear();
++                std::size_t offset = 0;
++                std::uint32_t previous_entry = 0;
++                while (offset < compressed_sparse_.size()) {
++                        previous_entry += decode_varint(compressed_sparse_, offset);
++                        keep_best(compressed_best_, previous_entry);
++                }
++                compressed_best_ready_ = true;
+         }
++        const auto& compressed = compressed_best_;
+ 
+         std::unordered_map<std::uint32_t, std::uint32_t> buffered;
+         buffered.reserve(sparse_buffer_count_);
+@@ -313,6 +349,7 @@
+         }
+         std::vector<std::uint8_t> compact(merged.begin(), merged.end());
+         compressed_sparse_.swap(compact);
++        compressed_best_ready_ = false;
+         std::fill(sparse_buffer_.begin(), sparse_buffer_.end(), 0);
+         sparse_buffer_count_ = 0;
+ }
+@@ -347,6 +384,8 @@
+         dense_registers_.assign(register_count_, 0);
+         for_each_sparse([&](std::uint32_t entry) { add_to_dense(entry); });
+         std::vector<std::uint8_t>().swap(compressed_sparse_);
++        compressed_best_.clear();
++        compressed_best_ready_ = false;
+         std::vector<std::uint32_t>().swap(sparse_buffer_);
+         sparse_buffer_count_ = 0;
+         sparse_ = false;

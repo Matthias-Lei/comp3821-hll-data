@@ -9,8 +9,8 @@ Relative RMSE is on the observations streams (one per n). Theory confirmed count
 | Linear Counting | 8,192 | 32,768 | 65,536 | 131,072 |
 | Bloom filter | 8,192 | 32,768 | 65,536 | 131,072 |
 | K-Minimum Values | 8,192 | 32,768 | 65,536 | 131,072 |
-| HyperLogLog | 6,144 | 24,576 | 49,152 | 98,304 |
-| HyperLogLog++ | 0 to 6,752 | 0 to 25,552 | 0 to 49,152 | 0 to 107,664 |
+| HyperLogLog | 8,192 | 32,768 | 65,536 | 131,072 |
+| HyperLogLog++ | 0 to 8,192 | 0 to 32,768 | 0 to 65,536 | 0 to 131,072 |
 
 ## Relative RMSE at n = 1,000
 
@@ -30,7 +30,7 @@ Relative RMSE is on the observations streams (one per n). Theory confirmed count
 | Bloom filter | 1.81% | 0.42% | 0.27% | 0.17% |
 | K-Minimum Values | 8.78% | 4.11% | 3.07% | 1.87% |
 | HyperLogLog | 2.95% | 2.76% | 0.86% | 0.55% |
-| HyperLogLog++ | 2.95% | 1.29% | 0.86% | 0.55% |
+| HyperLogLog++ | 2.95% | 1.26% | 0.85% | 0.55% |
 
 ## Relative RMSE at n = 100,000
 
@@ -60,7 +60,7 @@ Relative RMSE is on the observations streams (one per n). Theory confirmed count
 | Bloom filter | 428 of 440 (97%) | 491 of 509 (96%) | 523 of 538 (97%) | 514 of 547 (94%) | 1956 of 2034 (96%) |
 | K-Minimum Values | 559 of 579 (97%) | 543 of 579 (94%) | 567 of 579 (98%) | 569 of 579 (98%) | 2238 of 2316 (97%) |
 | HyperLogLog | 485 of 534 (91%) | 487 of 520 (94%) | 434 of 527 (82%) | 365 of 535 (68%) | 1771 of 2116 (84%) |
-| HyperLogLog++ | 176 of 216 (81%) | 115 of 139 (83%) | 62 of 109 (57%) | 48 of 72 (67%) | 401 of 536 (75%) |
+| HyperLogLog++ | 176 of 216 (81%) | 115 of 139 (83%) | 62 of 109 (57%) | 47 of 72 (65%) | 400 of 536 (75%) |
 
 The same, counting each observations stream's n once (its copies for other distributions of repeats hold the same values and repeat one result):
 
@@ -70,7 +70,7 @@ The same, counting each observations stream's n once (its copies for other distr
 | Bloom filter | 162 of 174 (93%) | 209 of 227 (92%) | 215 of 230 (93%) | 224 of 239 (94%) | 810 of 870 (93%) |
 | K-Minimum Values | 237 of 257 (92%) | 235 of 257 (91%) | 245 of 257 (95%) | 247 of 257 (96%) | 964 of 1028 (94%) |
 | HyperLogLog | 204 of 239 (85%) | 208 of 232 (90%) | 199 of 221 (90%) | 201 of 229 (88%) | 812 of 921 (88%) |
-| HyperLogLog++ | 100 of 126 (79%) | 68 of 83 (82%) | 36 of 53 (68%) | 27 of 32 (84%) | 231 of 294 (79%) |
+| HyperLogLog++ | 100 of 126 (79%) | 68 of 83 (82%) | 36 of 53 (68%) | 26 of 32 (81%) | 230 of 294 (78%) |
 
 ## Smallest n with a saturated seed
 
@@ -90,7 +90,7 @@ The same, counting each observations stream's n once (its copies for other distr
 | Bloom filter | not benchmarked |
 | K-Minimum Values | not benchmarked |
 | HyperLogLog | 231,680 of 231,680 |
-| HyperLogLog++ | 231,405 of 231,680 |
+| HyperLogLog++ | 231,676 of 231,680 |
 
 ## Median nanoseconds per value (streams of 1,000,000+ values)
 
@@ -99,5 +99,5 @@ The same, counting each observations stream's n once (its copies for other distr
 | Linear Counting | 6.5 | 6.6 | 6.6 | 6.5 |
 | Bloom filter | 14.3 | 14.2 | 14.3 | 14.4 |
 | K-Minimum Values | 21.8 | 27.9 | 23.0 | 22.9 |
-| HyperLogLog | 5.5 | 5.6 | 5.7 | 5.7 |
-| HyperLogLog++ | 19.7 | 17.9 | 19.0 | 18.2 |
+| HyperLogLog | 10.2 | 10.2 | 10.3 | 10.5 |
+| HyperLogLog++ | 17.6 | 22.3 | 23.0 | 26.9 |
