@@ -2,7 +2,7 @@
 
 - **Merge:** the OR of the two halves' bitmaps equals the bitmap of the whole stream in **231,680 of 231,680** trials.
 
-## Predictions inside the measured 95% interval (n >= 100, no seed saturated)
+## Predictions inside the measured 95% interval (n >= 100, where the theory is judged)
 
 | Streams, budget | RMSE | Bias |
 |---|---|---|
@@ -69,7 +69,7 @@
 
 ## Saturation
 
-| Budget | m ln m | Smallest n with a saturated seed |
+| Budget | Predicted saturation n | Smallest n with a saturated seed |
 |---|---|---|
 | 1 KiB | 73,817 | 62,643 |
 | 4 KiB | 340,696 | 295,998 |
