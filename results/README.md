@@ -23,6 +23,16 @@ for this run.
 | `analysis/summary.csv` | `results_analyser.py` output: one row per stream, sketch and budget (28,960 rows). Each row has the bias and RMSE with 95% CIs, the theory's prediction, whether the theory was confirmed, the timing and the merge results. |
 | `analysis/summary.md` | The same table as Markdown. |
 | `linear-counting/` | The Linear Counting figures (PDF and PNG) and `lc_key_numbers.md`, made by `plot_linear_counting.py` from `analysis/summary.csv`. |
+| `figures/bloom/`, `figures/kmv/`, `figures/hll/`, `figures/hllpp/` | The same figures for the Bloom filter, K-Minimum Values, HyperLogLog and HyperLogLog++ (RMSE against theory, bias, by distribution, saturation for the Bloom filter) and each sketch's key numbers, made by `plot_sketches.py`. |
+| `figures/comparison/` | The sketches against each other, made by `plot_comparison.py`: relative RMSE and bias against n, accuracy at equal memory, how often the theory is confirmed, measured / predicted RMSE, merge exactness, time per value, and `comparison_key_numbers.md`. |
+
+To redraw every figure from `analysis/summary.csv` (code on the `sid-linear-counting` branch of the
+code repo):
+
+```bash
+python3 python/plot_sketches.py --summary analysis/summary.csv
+python3 python/plot_comparison.py --summary analysis/summary.csv
+```
 
 To unpack the raw results:
 
